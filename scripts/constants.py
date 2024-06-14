@@ -1,0 +1,2 @@
+PLAYER_SIZE = (80, 80)
+TILE_SIZE = 80
