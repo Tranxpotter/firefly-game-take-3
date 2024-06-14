@@ -31,7 +31,9 @@ class TileMap:
     def draw(self, screen:pygame.Surface):
         for pos, tile in self.tiles.items():
             screen.blit(self.game_manager.assets[tile.tile_type], (pos[0]*TILE_SIZE, pos[1]*TILE_SIZE))
-        
+    
+    def entity_pos_to_tile_pos(self, pos:tuple[float, float]) -> tuple[int, int]:
+        return int(pos[0] // TILE_SIZE), int(pos[1] // TILE_SIZE)
     
     def list_adjacent_tiles(self, pos:tuple[int, int]) -> list[Tile]:
         tiles = []
@@ -45,11 +47,18 @@ class TileMap:
         
         return tiles
     
-    def list_adjacent_rects(self, pos:tuple[int, int]) -> list[pygame.Rect]:
+    def list_adjacent_rects(self, pos:tuple[int, int], collidable_only:bool = False) -> list[pygame.Rect]:
         rects = []
         for adjacent_tile in self.list_adjacent_tiles(pos):
+            if collidable_only:
+                if not adjacent_tile.solid:
+                    continue
+                elif adjacent_tile.jump_thru and not adjacent_tile.pos[1] > pos[1]:
+                    continue
+            
             rects.append(pygame.Rect(adjacent_tile.pos[0] * TILE_SIZE, adjacent_tile.pos[1]*TILE_SIZE, TILE_SIZE, TILE_SIZE))
         return rects
+    
         
     
     def entity_adjacent_tiles(self, entity_pos:tuple[float, float]) -> list[Tile]:

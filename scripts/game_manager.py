@@ -30,17 +30,17 @@ class GameManager:
         for i in range(10):
             tiles[(i+5, 10)] = Tile("dirt", (i+5, 10), solid=True)
             tiles[(15, i)] = Tile("grass", (15, i), solid=True)
-        self.tile_map = TileMap(self, (100, 100), tiles)
+        self.tilemap = TileMap(self, (100, 100), tiles)
         
     
     def handle_event(self, event:pygame.Event):
         self.player.handle_event(event)
-        self.tile_map.handle_event(event)
+        self.tilemap.handle_event(event)
     
     def update(self, dt:float):
         self.player.update(dt)
-        self.tile_map.update(dt)
+        self.tilemap.update(dt)
     
     def draw(self, screen:pygame.Surface):
-        self.tile_map.draw(screen)
+        self.tilemap.draw(screen)
         self.player.draw(screen)
