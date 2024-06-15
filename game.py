@@ -62,4 +62,4 @@ class Game:
             
             
 if __name__ == "__main__":
-    Game().run()
+    Game(frame_rate=30).run()

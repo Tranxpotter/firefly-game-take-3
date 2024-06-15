@@ -30,6 +30,9 @@ class GameManager:
         for i in range(10):
             tiles[(i+5, 10)] = Tile("dirt", (i+5, 10), solid=True)
             tiles[(15, i)] = Tile("grass", (15, i), solid=True)
+        
+        for i in range(3):
+            tiles[(i+7, 8)] = Tile("grass", (i+7, 8), jump_thru=True)
         self.tilemap = TileMap(self, (100, 100), tiles)
         
     

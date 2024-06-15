@@ -42,6 +42,8 @@ class Entity(pygame.sprite.Sprite):
     def rect(self, value):
         self.x, self.y, self.width, self.height = value.x, value.y, value.width, value.height
     
+    def get_curr_rect(self):
+        return pygame.Rect(self.x, self.y, self.width, self.height)
     
     def handle_event(self, event:pygame.Event):...
     
@@ -57,8 +59,10 @@ class SolidEntity(Entity):
     def __init__(self, game_manager, entity_type: str, pos: tuple[float, float], size: tuple[float, float], velocity: Velocity | None, *groups) -> None:
         super().__init__(game_manager, entity_type, pos, size, velocity, *groups)
         self.collisions = {"top":False, "bottom":False, "left":False, "right":False}
+        # self.frame_counter = 0
     
     def update(self, dt: float):
+        # self.frame_counter += 1
         self.collisions = {"top":False, "bottom":False, "left":False, "right":False}
         try:
             tilemap:TileMap = self.game_manager.__getattribute__("tilemap")
@@ -69,32 +73,40 @@ class SolidEntity(Entity):
         assert isinstance(tilemap, TileMap)
         
         
-        tile_pos = tilemap.entity_pos_to_tile_pos(self.pos)
-        collidable_rects = tilemap.list_adjacent_rects(tile_pos, True)
+        
         
         #Check horizontal collisions
         self.x += self.velocity.x * dt
+        entity_rect = self.get_curr_rect()
+        
+        collidable_rects = tilemap.entity_collidable_rects(self.pos, self)
         for collidable_rect in collidable_rects:
-            if self.rect.colliderect(collidable_rect):
+            if entity_rect.colliderect(collidable_rect):
+                # print("collide x", entity_rect, collidable_rect, self.frame_counter)
                 if self.velocity.x > 0:
-                    self.x = collidable_rect.left - self.width
+                    entity_rect.right = collidable_rect.left
                     self.collisions["right"] = True
                 elif self.velocity.x < 0:
-                    self.x = collidable_rect.right
+                    entity_rect.left = collidable_rect.right
                     self.collisions["left"] = True
-                
-                self.velocity.x = 0
+                self.x = entity_rect.x
+                # self.velocity.x = 0
         
         #Check vertical collisions
         self.y += self.velocity.y * dt
+        entity_rect = self.get_curr_rect()
+        
+        collidable_rects = tilemap.entity_collidable_rects(self.pos, self)
         for collidable_rect in collidable_rects:
-            if self.rect.colliderect(collidable_rect):
+            if entity_rect.colliderect(collidable_rect):
+                # print("collide y", entity_rect, collidable_rect, self.frame_counter)
                 if self.velocity.y > 0:
-                    self.y = collidable_rect.top - self.height
+                    entity_rect.bottom = collidable_rect.top
                     self.collisions["bottom"] = True
                 elif self.velocity.y < 0:
-                    self.y = collidable_rect.bottom
+                    entity_rect.top = collidable_rect.bottom
                     self.collisions["top"] = True
+                self.y = entity_rect.y
                 
                 self.velocity.y = 0
         
@@ -112,9 +124,9 @@ class Player(SolidEntity):
     def handle_event(self, event: pygame.Event):
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_a or event.key == pygame.K_LEFT:
-                self.velocity.x = -self.movement_speed
+                self.velocity.x -= self.movement_speed
             elif event.key == pygame.K_d or event.key == pygame.K_RIGHT:
-                self.velocity.x = self.movement_speed
+                self.velocity.x += self.movement_speed
             
             elif event.key == pygame.K_SPACE or event.key == pygame.K_UP:
                 if not self.can_jump:
@@ -125,9 +137,9 @@ class Player(SolidEntity):
         
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_a or event.key == pygame.K_LEFT:
-                self.velocity.x = 0
+                self.velocity.x += self.movement_speed
             elif event.key == pygame.K_d or event.key == pygame.K_RIGHT:
-                self.velocity.x = 0
+                self.velocity.x -= self.movement_speed
             
     
     def update(self, dt: float):

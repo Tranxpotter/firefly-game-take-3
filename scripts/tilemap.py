@@ -51,17 +51,27 @@ class TileMap:
         rects = []
         for adjacent_tile in self.list_adjacent_tiles(pos):
             if collidable_only:
-                if not adjacent_tile.solid:
-                    continue
-                elif adjacent_tile.jump_thru and not adjacent_tile.pos[1] > pos[1]:
+                if not adjacent_tile.solid and (adjacent_tile.jump_thru and not adjacent_tile.pos[1] > pos[1]):
                     continue
             
             rects.append(pygame.Rect(adjacent_tile.pos[0] * TILE_SIZE, adjacent_tile.pos[1]*TILE_SIZE, TILE_SIZE, TILE_SIZE))
         return rects
     
-        
+    
     
     def entity_adjacent_tiles(self, entity_pos:tuple[float, float]) -> list[Tile]:
-        adjusted_pos = int(entity_pos[0]/TILE_SIZE), int(entity_pos[1]/TILE_SIZE)
+        adjusted_pos = int(entity_pos[0]//TILE_SIZE), int(entity_pos[1]//TILE_SIZE)
         return self.list_adjacent_tiles(adjusted_pos)
+    
+    def entity_collidable_rects(self, entity_pos:tuple[float, float], entity) -> list[pygame.Rect]:
+        pos = self.entity_pos_to_tile_pos(entity_pos)
+        adjacent_tiles = self.list_adjacent_tiles(pos)
         
+        rects = []
+        for tile in adjacent_tiles:
+            if tile.solid:
+                rects.append(pygame.Rect(tile.pos[0] * TILE_SIZE, tile.pos[1]*TILE_SIZE, TILE_SIZE, TILE_SIZE))
+            elif tile.jump_thru and entity.velocity.y >= 0 and tile.pos[1] > pos[1]:
+                rects.append(pygame.Rect(tile.pos[0] * TILE_SIZE, tile.pos[1]*TILE_SIZE, TILE_SIZE, TILE_SIZE))
+        
+        return rects
