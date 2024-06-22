@@ -28,9 +28,16 @@ class TileMap:
         for tile in self.tiles.values():
             tile.update(dt)
     
-    def draw(self, screen:pygame.Surface):
-        for pos, tile in self.tiles.items():
-            screen.blit(self.game_manager.assets[tile.tile_type], (pos[0]*TILE_SIZE, pos[1]*TILE_SIZE))
+    def draw(self, screen:pygame.Surface, offset:tuple[int, int] = (0, 0)):
+        
+        
+        for tile_x in range(int(offset[0] // TILE_SIZE), int((offset[0] + screen.get_width()) // TILE_SIZE) + 1):
+            for tile_y in range(int(offset[1] // TILE_SIZE), int((offset[1] + screen.get_height()) // TILE_SIZE) + 1):
+                if (tile_x, tile_y) in self.tiles:
+                    tile = self.tiles[(tile_x, tile_y)]
+                    screen.blit(self.game_manager.assets[tile.tile_type], (tile.pos[0]*TILE_SIZE - offset[0], tile.pos[1]*TILE_SIZE - offset[1]))
+        
+
     
     def entity_pos_to_tile_pos(self, pos:tuple[float, float]) -> tuple[int, int]:
         return int(pos[0] // TILE_SIZE), int(pos[1] // TILE_SIZE)

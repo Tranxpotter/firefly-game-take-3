@@ -51,8 +51,11 @@ class Entity(pygame.sprite.Sprite):
         self.x += self.velocity.x * dt
         self.y += self.velocity.y * dt
     
-    def draw(self, screen:pygame.Surface):
-        screen.blit(self.game_manager.assets[self.entity_type], self.rect)
+    def img(self):
+        return self.game_manager.assets[self.entity_type]
+    
+    def draw(self, screen:pygame.Surface, offset:tuple[int, int] = (0, 0)):
+        screen.blit(self.img(), (self.rect.x - offset[0], self.rect.y - offset[1]))
 
 
 class SolidEntity(Entity):
@@ -118,15 +121,18 @@ PlayerGroup = pygame.sprite.Group()
 class Player(SolidEntity):
     def __init__(self, game_manager, pos: tuple[float, float], velocity: Velocity|None = None) -> None:
         super().__init__(game_manager, "player", pos, PLAYER_SIZE, velocity, PlayerGroup)
+        self.movement:list[bool] = [False, False]
         self.movement_speed = 240
         self.can_jump = False
+        
+        self.flip = False
     
     def handle_event(self, event: pygame.Event):
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_a or event.key == pygame.K_LEFT:
-                self.velocity.x -= self.movement_speed
+                self.movement[0] = True
             elif event.key == pygame.K_d or event.key == pygame.K_RIGHT:
-                self.velocity.x += self.movement_speed
+                self.movement[1] = True
             
             elif event.key == pygame.K_SPACE or event.key == pygame.K_UP:
                 if not self.can_jump:
@@ -137,23 +143,32 @@ class Player(SolidEntity):
         
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_a or event.key == pygame.K_LEFT:
-                self.velocity.x += self.movement_speed
+                self.movement[0] = False
             elif event.key == pygame.K_d or event.key == pygame.K_RIGHT:
-                self.velocity.x -= self.movement_speed
+                self.movement[1] = False
             
     
     def update(self, dt: float):
+        self.velocity.x = (-self.movement[0] + self.movement[1]) * self.movement_speed
         #Gravity velocity update
         self.velocity.y = min(self.velocity.y + 1000*dt, 1000)
         
         super().update(dt)
         if self.collisions["bottom"]:
             self.can_jump = True
-    
-    # def draw(self, screen: pygame.Surface):
-    #     assert self.rect is not None
-    #     pygame.draw.rect(screen, (255, 0, 0), self.rect)
         
+        if self.movement[0] and (not self.movement[1]):
+            self.flip = False
+        elif (not self.movement[0]) and self.movement[1]:
+            self.flip = True
+        
+    
+    def draw(self, screen: pygame.Surface, offset: tuple[int, int] = (0, 0)):
+        
+        
+        img = self.img()
+        img = pygame.transform.flip(img, self.flip, False)
+        screen.blit(img, (self.rect.x - offset[0], self.rect.y - offset[1]))
 
 
 

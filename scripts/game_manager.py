@@ -32,8 +32,10 @@ class GameManager:
             tiles[(15, i)] = Tile("grass", (15, i), solid=True)
         
         for i in range(3):
-            tiles[(i+7, 8)] = Tile("grass", (i+7, 8), jump_thru=True)
+            tiles[(i+7, 7)] = Tile("grass", (i+7, 7), jump_thru=True)
         self.tilemap = TileMap(self, (100, 100), tiles)
+        
+        self.camera_offset:list[float] = [0, 0]
         
     
     def handle_event(self, event:pygame.Event):
@@ -43,7 +45,14 @@ class GameManager:
     def update(self, dt:float):
         self.player.update(dt)
         self.tilemap.update(dt)
+        
+        
     
     def draw(self, screen:pygame.Surface):
-        self.tilemap.draw(screen)
-        self.player.draw(screen)
+        screen.fill("lightblue")
+        self.camera_offset[0] += (self.player.rect.centerx - screen.get_width() / 2 - self.camera_offset[0]) / 10
+        self.camera_offset[1] += (self.player.rect.centery - screen.get_height() / 2 - self.camera_offset[1]) / 10
+        render_offset = (int(self.camera_offset[0]), int(self.camera_offset[1]))
+        
+        self.tilemap.draw(screen, render_offset)
+        self.player.draw(screen, render_offset)

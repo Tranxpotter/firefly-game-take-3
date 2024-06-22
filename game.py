@@ -19,6 +19,7 @@ class Game:
         
         self.screen = pygame.display.set_mode(screen_size)
         self.display = pygame.Surface((1920, 1080))
+        pygame.display.set_caption("Firefly Gameee")
         
         self.scene_manager = better_pygame.SceneManager(self.screen_size)
         self.scenes = {"game":GameScene(self.scene_manager)}
@@ -62,4 +63,4 @@ class Game:
             
             
 if __name__ == "__main__":
-    Game(frame_rate=30).run()
+    Game(frame_rate=60).run()
